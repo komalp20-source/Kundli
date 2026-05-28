@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kundli Agent — 7-Layer Vedic Astrology</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #FAFAF8;
+    --bg2: #F2F0EB;
+    --border: #E2DDD5;
+    --border2: #C8C0B4;
+    --text: #1A1814;
+    --text2: #6B6560;
+    --text3: #9A948E;
+    --accent: #8B4513;
+    --accent-bg: #FDF5EE;
+    --gold: #C9A84C;
+    --success: #2E6B4F;
+    --danger: #A0301A;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0; }
+  .container { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
+  .header { text-align: center; padding: 32px 0 28px; border-bottom: 0.5px solid var(--border); margin-bottom: 24px; }
+  .header-om { font-size: 28px; margin-bottom: 8px; }
+  .header h1 { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+  .header p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .card { background: white; border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: var(--text2); margin-bottom: 16px; line-height: 1.6; }
+  .field-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; margin-top: 14px; font-weight: 500; }
+  .field-opt { font-weight: 400; color: var(--text3); margin-left: 4px; }
+  input, textarea, select { width: 100%; font-family: inherit; font-size: 13px; padding: 9px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: white; color: var(--text); outline: none; transition: border-color 0.15s; }
+  input:focus, textarea:focus { border-color: var(--border2); }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  .btn { font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 18px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; border: 0.5px solid; width: 100%; margin-top: 14px; }
+  .btn-primary { background: var(--text); color: white; border-color: var(--text); }
+  .btn-primary:hover { background: #2A2520; }
+  .btn-outline { background: white; color: var(--text2); border-color: var(--border); }
+  .btn-outline:hover { background: var(--bg2); color: var(--text); }
+  .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+  .btn-row .btn { margin-top: 0; }
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 16px 0; }
+  .link-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; }
+  .ext-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 6px 12px; border: 0.5px solid var(--border); border-radius: 20px; color: var(--text2); text-decoration: none; transition: all 0.15s; }
+  .ext-link:hover { background: var(--bg2); color: var(--text); border-color: var(--border2); }
+  .step-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+  .step-dot { width: 26px; height: 26px; border-radius: 50%; border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text3); background: var(--bg2); flex-shrink: 0; }
+  .step-dot.active { background: var(--text); color: white; border-color: var(--text); }
+  .step-dot.done { background: var(--success); color: white; border-color: var(--success); }
+  .step-line { flex: 1; height: 0.5px; background: var(--border); }
+  .upload-item { border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; background: var(--bg); transition: border-color 0.15s; }
+  .upload-item.done { border-color: var(--success); background: #F0F7F3; }
+  .upload-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .upload-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; border: 0.5px solid var(--border); color: var(--text3); }
+  .badge.done { border-color: var(--success); color: var(--success); background: #F0F7F3; }
+  .upload-desc { font-size: 12px; color: var(--text2); margin-bottom: 10px; line-height: 1.5; }
+  .upload-btn { font-family: inherit; font-size: 12px; padding: 6px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: white; color: var(--text); cursor: pointer; transition: all 0.15s; }
+  .upload-btn:hover { background: var(--bg2); }
+  .inst-panel { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-top: 4px; }
+  .inst-step { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+  .inst-num { width: 20px; height: 20px; min-width: 20px; border-radius: 50%; background: white; border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text2); }
+  .inst-text { font-size: 12px; color: var(--text2); line-height: 1.55; flex: 1; }
+  .inst-text strong { color: var(--text); }
+  .msg-box { background: white; border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 10px; }
+  .msg-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+  .msg-text { font-size: 12px; color: var(--text); font-family: 'SF Mono', 'Fira Code', monospace; line-height: 1.5; white-space: pre-wrap; }
+  .copy-btn { font-family: inherit; font-size: 12px; padding: 6px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: white; color: var(--text); cursor: pointer; margin-top: 8px; }
+  .copy-btn:hover { background: var(--bg2); }
+  .chart-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chart-badge { font-size: 11px; padding: 3px 10px; border-radius: 10px; border: 0.5px solid var(--success); color: var(--success); background: #F0F7F3; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; margin-top: 4px; }
+  .module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .module-card { border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px; cursor: pointer; background: var(--bg); transition: all 0.15s; }
+  .module-card:hover { border-color: var(--border2); background: white; box-shadow: var(--shadow); }
+  .module-icon { font-size: 20px; margin-bottom: 6px; }
+  .module-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .module-sub { font-size: 11px; color: var(--text3); line-height: 1.4; }
+  .layer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; margin-bottom: 18px; }
+  .lp { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; cursor: pointer; transition: all 0.15s; }
+  .lp:hover { border-color: var(--border2); background: white; }
+  .lp-num { font-size: 10px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .lp-name { font-size: 12px; font-weight: 500; color: var(--text); margin-top: 2px; }
+  .q-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .q-item { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 11px 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: all 0.15s; }
+  .q-item:hover { border-color: var(--border2); background: white; box-shadow: var(--shadow); }
+  .q-left { flex: 1; }
+  .q-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .q-sub { font-size: 11px; color: var(--text3); }
+  .q-arrow { font-size: 16px; color: var(--text3); }
+  .free-row { display: flex; gap: 8px; }
+  .free-row input { flex: 1; margin-top: 0; }
+  .free-row button { white-space: nowrap; padding: 9px 16px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: var(--text); color: white; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+  .free-row button:hover { background: #2A2520; }
+  .back-link { font-size: 12px; color: var(--text3); cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; margin-top: 12px; display: inline-block; }
+  .back-link:hover { color: var(--text2); }
+  .mod-back { display: inline-block; font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 0.5px solid var(--border); color: var(--text3); margin-bottom: 14px; cursor: pointer; transition: all 0.15s; }
+  .mod-back:hover { background: var(--bg2); color: var(--text2); }
+
+  /* Chat area */
+  .chat-area { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { padding: 12px 14px; border-radius: var(--radius-sm); font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; max-width: 95%; }
+  .msg.user { background: var(--text); color: white; align-self: flex-end; border-radius: var(--radius-sm) var(--radius-sm) 2px var(--radius-sm); }
+  .msg.agent { background: var(--accent-bg); color: var(--text); align-self: flex-start; border: 0.5px solid var(--border); border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) 2px; }
+  .msg.loading { color: var(--text3); font-style: italic; background: var(--bg2); border: 0.5px solid var(--border); align-self: flex-start; }
+  .msg.error { color: var(--danger); background: #FEF0EE; border: 0.5px solid #FACEC8; align-self: flex-start; font-size: 12px; }
+  .chat-input-row { display: flex; gap: 8px; margin-top: 12px; align-items: flex-end; }
+  .chat-input-row textarea { flex: 1; min-height: 44px; max-height: 120px; resize: none; font-size: 14px; margin-top: 0; }
+  .chat-input-row button { padding: 10px 16px; background: var(--text); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .chat-input-row button:hover { background: #2A2520; }
+
+  .hidden { display: none !important; }
+  @media (max-width: 480px) {
+    .module-grid { grid-template-columns: 1fr; }
+    .layer-grid { grid-template-columns: 1fr 1fr; }
+    .container { padding: 16px 12px 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-om">🕉️</div>
+    <h1>Kundli Agent</h1>
+    <p>7-Layer Vedic Astrology · Powered by AI</p>
+  </div>
+
+  <!-- PAGE 1: CHART DATA -->
+  <div id="page1" class="card">
+    <div class="step-row">
+      <div class="step-dot active" id="s1">1</div>
+      <div class="step-line"></div>
+      <div class="step-dot" id="s2">2</div>
+      <div class="step-line"></div>
+      <div class="step-dot" id="s3">3</div>
+    </div>
+    <div class="card-title">Enter chart data</div>
+    <div class="card-sub">Paste planetary positions from any Vedic calculator. This is all you need to get started.</div>
+
+    <div class="field-label">Get precise chart data from</div>
+    <div class="link-row">
+      <a class="ext-link" href="https://www.prokerala.com/astrology/kundli/" target="_blank">↗ Prokerala</a>
+      <a class="ext-link" href="https://www.astrosage.com/kundli/" target="_blank">↗ AstroSage</a>
+      <a class="ext-link" href="https://horoscopes.astro-seek.com/birth-chart-vedic-astrology-online" target="_blank">↗ Astro-Seek</a>
+    </div>
+    <div class="divider"></div>
+
+    <div class="field-label">Name</div>
+    <input type="text" id="i-name" placeholder="Person's name" />
+
+    <div class="field-label">Birth details</div>
+    <input type="text" id="i-birth" placeholder="e.g. 13 April 1994, 4:26 PM, Hazaribagh" />
+
+    <div class="field-label">Planetary positions <span style="color:var(--danger);font-weight:400;font-size:11px;">required</span></div>
+    <textarea id="i-planets" rows="7" placeholder="Paste full planetary table — sign, degree, house, nakshatra, avastha for each planet"></textarea>
+
+    <div class="field-label">Dasha sequence <span class="field-opt">optional</span></div>
+    <textarea id="i-dasha" rows="3" placeholder="Current Mahadasha and Antardasha with dates"></textarea>
+
+    <button class="btn btn-primary" id="next-btn">Next — Upload divisional charts ↗</button>
+  </div>
+
+  <!-- PAGE 2: UPLOADS -->
+  <div id="page2" class="card hidden">
+    <div class="step-row">
+      <div class="step-dot done" id="s1b">✓</div>
+      <div class="step-line"></div>
+      <div class="step-dot active" id="s2b">2</div>
+      <div class="step-line"></div>
+      <div class="step-dot" id="s3b">3</div>
+    </div>
+    <div class="card-title">Upload divisional charts <span style="font-size:12px;font-weight:400;color:var(--text3);">— all optional</span></div>
+    <div class="card-sub">Upload screenshots of D9, D10, or D12 charts. The agent reads both North Indian and South Indian formats accurately.</div>
+    <div id="upload-grid"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline" id="back-to-1">← Back</button>
+      <button class="btn btn-primary" id="to-agent-btn">Start reading ↗</button>
+    </div>
+  </div>
+
+  <!-- PAGE 3: DASHBOARD -->
+  <div id="page3" class="hidden">
+    <div class="card">
+      <div class="step-row">
+        <div class="step-dot done">✓</div>
+        <div class="step-line"></div>
+        <div class="step-dot done">✓</div>
+        <div class="step-line"></div>
+        <div class="step-dot active">3</div>
+      </div>
+      <div class="card-title" id="a-title">Kundli agent</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;" id="a-sub"></div>
+      <div class="chart-badges" id="chart-badges"></div>
+
+      <div class="section-label">Life topics</div>
+      <div class="module-grid" id="module-grid"></div>
+
+      <div class="section-label">7-layer analysis</div>
+      <div class="layer-grid" id="layer-grid"></div>
+
+      <div class="section-label">Ask freely</div>
+      <div class="free-row">
+        <input type="text" id="free-q" placeholder="Ask anything about this chart..." />
+        <button id="free-btn">Ask ↗</button>
+      </div>
+
+      <div class="chat-area" id="dash-chat"></div>
+      <button class="back-link" id="reset-btn">← Start new chart</button>
+    </div>
+  </div>
+
+  <!-- PAGE 4: MODULE -->
+  <div id="page4" class="hidden">
+    <div class="card">
+      <div class="mod-back" id="back-tag">← All topics</div>
+      <div class="card-title" id="m-title"></div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;" id="m-sub"></div>
+      <div class="q-list" id="m-questions"></div>
+      <div class="section-label">Ask freely</div>
+      <div class="free-row">
+        <input type="text" id="m-free-q" placeholder="Ask anything within this topic..." />
+        <button id="m-free-btn">Ask ↗</button>
+      </div>
+      <div class="chat-area" id="mod-chat"></div>
+      <button class="back-link" id="back-btn2">← Back to all topics</button>
+    </div>
+  </div>
+
+  <!-- PAGE 5: UPLOAD INSTRUCTIONS -->
+  <div id="page5" class="card hidden">
+    <div class="card-title" id="inst-title">How to upload</div>
+    <div class="card-sub">Follow these steps to share your divisional chart image.</div>
+    <div class="inst-panel">
+      <div class="inst-step">
+        <div class="inst-num">1</div>
+        <div class="inst-text">Take a <strong>screenshot</strong> of your chart from AstroSage, Prokerala, or any Jyotish software. Make sure all Rashi numbers and planet abbreviations are clearly visible.</div>
+      </div>
+      <div class="inst-step">
+        <div class="inst-num">2</div>
+        <div class="inst-text">Click <strong>Choose file</strong> below and select your screenshot.</div>
+      </div>
+      <div class="inst-step">
+        <div class="inst-num">3</div>
+        <div class="inst-text">The agent will <strong>read the image automatically</strong> and extract all planetary placements using trained North Indian and South Indian chart reading rules.</div>
+      </div>
+      <input type="file" id="chart-file-input" accept="image/*" style="display:none;" />
+      <div class="msg-box" id="inst-preview-box" style="display:none;">
+        <div class="msg-label">Selected image:</div>
+        <img id="inst-preview-img" style="max-width:100%;border-radius:4px;margin-top:4px;" alt="Chart preview" />
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="btn btn-outline" id="inst-back-btn">← Back</button>
+      <button class="btn btn-primary" id="inst-choose-btn">Choose file ↗</button>
+    </div>
+    <button class="btn btn-primary hidden" id="inst-done-btn" style="margin-top:8px;">Upload this chart ✓</button>
+  </div>
+
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+var chartCtx = '';
+var personName = '';
+var currentModuleKey = '';
+var currentInstType = '';
+var uploadedCharts = { d9: { done: false, b64: '' }, d10: { done: false, b64: '' }, d12: { done: false, b64: '' } };
+
+// ─── Image reading rules (both formats) ──────────────────────────────────────
+var IMAGE_RULES =
+'VEDIC CHART IMAGE READING RULES — apply these precisely:\n\n' +
+'RASHI NUMBER TO SIGN (fixed, never changes):\n' +
+'1=Aries 2=Taurus 3=Gemini 4=Cancer 5=Leo 6=Virgo\n' +
+'7=Libra 8=Scorpio 9=Sagittarius 10=Capricorn 11=Aquarius 12=Pisces\n\n' +
+'NORTH INDIAN FORMAT (diamond/square layout):\n' +
+'- Numbers in cells are Rashi numbers, NOT house numbers\n' +
+'- Find cell with "Asc" or "Lagna" marker → that Rashi = House 1\n' +
+'- If no Asc marker → top-center cell Rashi = House 1 (flag this)\n' +
+'- Count FORWARD sequentially from House 1 Rashi, wrapping 12→1\n' +
+'- Example: Asc in Rashi 11 → H1=Rashi11(Aquarius), H2=Rashi12(Pisces), H3=Rashi1(Aries)...\n\n' +
+'SOUTH INDIAN FORMAT (4x4 grid layout):\n' +
+'- Numbers in cells are also Rashi numbers, NOT house numbers\n' +
+'- Find cell with cut corner (diagonal line) → that Rashi = House 1\n' +
+'- If no cut corner → top-left cell Rashi = House 1 (flag this)\n' +
+'- Count CLOCKWISE sequentially from House 1 Rashi, wrapping 12→1\n\n' +
+'PLANET ABBREVIATIONS:\n' +
+'Su=Sun Mo=Moon Ma=Mars Me=Mercury Ju=Jupiter Ve=Venus Sa=Saturn Ra=Rahu Ke=Ketu\n' +
+'Western (note separately, exclude from Jyotish analysis): Ur=Uranus Ne=Neptune Pl=Pluto\n\n' +
+'RETROGRADE: R or ® or (R) after planet = retrograde\n\n' +
+'OUTPUT FORMAT:\n' +
+'House 1 (Rashi N — SignName): [planets or empty]\n' +
+'House 2 (Rashi N — SignName): [planets or empty]\n' +
+'... through House 12\n' +
+'Retrograde planets: [list]\n' +
+'Western planets (houses): [list]\n' +
+'Ambiguous readings: [flag anything unclear]';
+
+// ─── Response format ──────────────────────────────────────────────────────────
+var RESPONSE_FORMAT =
+'RESPONSE FORMAT — always answer in exactly this order:\n\n' +
+'1. WHAT IS HAPPENING (2-3 sentences): Plain language verdict. No jargon. What is happening in this area of their life right now.\n\n' +
+'2. WHAT TO DO (2-3 sentences): Specific actionable guidance. What to do, avoid, or focus on. Include one practical remedy or timing insight.\n\n' +
+'3. WHY — THE ASTROLOGICAL REASONING: Full reasoning — planets, houses, dashas, avasthas, yogas — in depth.';
+
+// ─── 7-layer model ────────────────────────────────────────────────────────────
+var SEVEN_LAYERS =
+'7-LAYER VEDIC MODEL:\n' +
+'Layer 1 — Foundational Trinity: Lagna, lagna lord condition, Moon sign\n' +
+'Layer 2 — Planetary Strength: dignity, avastha (Bala 0-6°, Kumara 6-12°, Yuva 12-18°, Vriddha 18-24°, Mrita 24-30°), combustion, retrograde, house\n' +
+'Layer 3 — Nakshatra Analysis: birth nakshatra, lord, sub-lord, pada, deity\n' +
+'Layer 4 — Divisional Charts: D9 Navamsa (marriage, post-35 life), D10 Dasamsa (career), D12 Dvadasamsa (parents)\n' +
+'Layer 5 — Yoga Identification: all major yogas, what they promise, which dasha activates them\n' +
+'Layer 6 — Dasha Timing: yoga-to-dasha mapping, current and upcoming periods\n' +
+'Layer 7 — Full Synthesis: integrated life-narrative, agreement across layers, life-shape';
+
+// ─── Layer questions ──────────────────────────────────────────────────────────
+var LAYER_Q = [
+  'Layer 1 — Foundational Trinity: analyse the Lagna, lagna lord condition, and Moon sign. Core identity, operating mode, emotional baseline.',
+  'Layer 2 — Planetary Strength: assess each planet — dignity, avastha (Bala 0-6, Kumara 6-12, Yuva 12-18, Vriddha 18-24, Mrita 24-30), combustion, retrograde, house. Rank strongest to weakest.',
+  'Layer 3 — Nakshatra Analysis: birth nakshatra in depth — lord, sub-lord, pada, deity, shakti. Also Lagna nakshatra and key planet nakshatras.',
+  'Layer 4 — Divisional Charts: using any D9/D10/D12 images shared — apply the chart reading rules to extract placements, then analyse Navamsa for marriage and post-35 trajectory, Dasamsa for career, Dvadasamsa for parents.',
+  'Layer 5 — Yoga Identification: identify every major yoga — Mahapurusha, Raja, Dhana, Vipreet Raja, Parivartana, Neecha Bhanga, Kemadruma, Gajakesari. Name, planets, promise, activation dasha.',
+  'Layer 6 — Dasha Timing: map key yogas to dasha activation. Analyse current Mahadasha and Antardasha in depth. What is active now and coming next?',
+  'Layer 7 — Full Synthesis: integrate all 7 layers into a complete life-narrative. Where layers agree = high confidence. Where they contradict = tensions. Give the overall life-shape.'
+];
+var LAYER_NAMES = ['Foundational trinity','Planetary strength','Nakshatra depth','Divisional charts','Yoga identification','Dasha timing','Full synthesis'];
+
+// ─── Modules ──────────────────────────────────────────────────────────────────
+var MODULES = {
+  marriage:  { icon:'💍', title:'Marriage & Relationships', sub:'7th house · D9 · Venus · Jupiter · Dasha', questions:[
+    {t:'When will I get married?',          s:'Dasha timing for marriage',      q:'Using 7th house, Venus, and dasha — when is marriage most likely? Give specific dasha windows.'},
+    {t:'What kind of partner will I have?', s:'Nature and qualities of spouse', q:'Using 7th house, 7th lord, Venus, and D9 — what is the nature and background of the likely partner?'},
+    {t:'Love or arranged marriage?',        s:'Love vs arranged indicators',    q:'Using Rahu, Venus, and 5th/7th house — does this chart favour love marriage, arranged, or a mix?'},
+    {t:'What makes me compatible?',         s:'Compatibility guidance',         q:'Using 7th house, Venus, Moon sign, and D9 — what kinds of partners are most compatible?'},
+    {t:'Will there be marriage problems?',  s:'Challenges in marriage',         q:'Using Mangal Dosha, 7th house afflictions, Saturn aspects, and dasha — likely challenges and when they are most active.'},
+    {t:'Who is my partner at soul level?',  s:'D9 Navamsa partner analysis',    q:'Using D9 7th house — apply chart reading rules to the uploaded D9 image, then interpret the lasting marriage partnership.'},
+    {t:'Second marriage indicators',        s:'Separation or second marriage',  q:'Using 8th house, Venus, and dasha — are there indicators of separation or second marriage?'},
+    {t:'How is my love life right now?',    s:'Current relationship reading',   q:'Using current dasha, Venus, and 7th house — what does the chart say about love and relationships right now?'}
+  ]},
+  career:    { icon:'💼', title:'Career & Job', sub:'10th house · D10 · Jupiter · Saturn · Mercury', questions:[
+    {t:'Which career suits me?',          s:'Best field based on chart',  q:'Using 10th house, 10th lord, lagna lord, strongest planets, and D10 — what career fields suit this chart?'},
+    {t:'Business or service?',            s:'Employed vs self-employed',  q:'Using 7th house, 10th house, Jupiter vs Saturn — does this chart favour employment or self-employment?'},
+    {t:'When does career peak?',          s:'Career peak periods',        q:'Using dasha, 10th lord, and D10 — when are the career peak periods?'},
+    {t:'Will I get a promotion soon?',    s:'Promotion timing',           q:'Using current dasha, 10th house, and Sun — is a promotion indicated? When is the best window?'},
+    {t:'Should I change jobs?',           s:'Career change indicators',   q:'Using current dasha and 10th lord — does the chart support a career change now?'},
+    {t:'Foreign career opportunities',    s:'Career abroad',              q:'Using 12th house, 9th house, Rahu, and dasha — indications of career growth through foreign work?'},
+    {t:'D10 deep career reading',         s:'Dasamsa analysis',           q:'Using the D10 chart image — apply chart reading rules to extract placements, then give a detailed career analysis: field, trajectory, peak periods.'},
+    {t:'Best time to start a business',   s:'Business launch timing',     q:'Using 7th house, 10th lord, 2nd and 11th lords, and dasha — ideal window to start a business? Go or wait?'}
+  ]},
+  money:     { icon:'💰', title:'Money & Finances', sub:'2nd house · 11th house · Venus · Jupiter · Dasha', questions:[
+    {t:'When will finances improve?',       s:'Financial improvement timing', q:'Using 2nd, 11th, their lords, Jupiter, and dasha — when does the financial situation materially improve?'},
+    {t:'Is money tight right now?',         s:'Current financial period',     q:'Using current dasha, 2nd and 11th lord condition, and Saturn transits — what does the chart say about finances now?'},
+    {t:'What are my wealth prospects?',     s:'Overall wealth potential',     q:'Using Dhana yogas, 2nd and 11th house, Venus and Jupiter — what is the wealth trajectory and ceiling?'},
+    {t:'What Dhana yogas do I have?',       s:'Wealth combinations',          q:'Identify all Dhana yogas — planets, promise, which dasha activates them.'},
+    {t:'Good time to invest?',              s:'Investment timing',            q:'Using current dasha, 5th house, Jupiter, and 2nd/11th lords — is this a good period for investments?'},
+    {t:'Will I get out of debt?',           s:'Debt relief timing',           q:'Using 6th house, 12th house, Saturn, and dasha — when does financial pressure ease?'},
+    {t:'Property and real estate',          s:'Property purchase timing',     q:'Using 4th house, 4th lord, Mars, and dasha — right time to buy property?'},
+    {t:'Financial outlook next 12 months',  s:'Money forecast',               q:'Using current dasha and antardasha — specific financial outlook for the next 12 months.'}
+  ]},
+  health:    { icon:'🌿', title:'Health & Wellbeing', sub:'Lagna · 6th house · Moon · Saturn · Dasha', questions:[
+    {t:'When are my vulnerable health periods?', s:'Health risk timing',          q:'Using 6th house, 8th house, Lagna lord, and dasha — which periods carry highest health vulnerability?'},
+    {t:'Which body areas are sensitive?',        s:'Body part vulnerabilities',   q:'Using Lagna sign, 6th house, afflicted planets — which body areas are most vulnerable?'},
+    {t:'Mental health in my chart',              s:'Emotional and mental health', q:'Using Moon, 4th house, Mercury, and dasha — what does the chart indicate about mental health patterns?'},
+    {t:'Longevity indicators',                   s:'Life span and vitality',      q:'Using Lagna lord, 8th house, Saturn, and Jupiter — what do longevity indicators suggest?'},
+    {t:'How is my health right now?',            s:'Current health period',       q:'Using current dasha, 6th house, and transits — what does the chart indicate about health right now?'},
+    {t:'Chronic health patterns',                s:'Long-term health themes',     q:'Using 6th house, its lord, and afflicted planets — what chronic or recurring health themes are indicated?'}
+  ]},
+  future:    { icon:'🔮', title:'Future Predictions', sub:'Dasha · Transits · Yogas · 5-year outlook', questions:[
+    {t:'What does this year hold?',          s:'12-month prediction',         q:'Using current dasha, antardasha, and positions — detailed prediction for the next 12 months across all life areas.'},
+    {t:'Next 5 years overview',              s:'Medium-term trajectory',      q:'Using dasha sequence for 5 years — map major themes, opportunities, and challenges in each period.'},
+    {t:'When does life improve?',            s:'Next turning point',          q:'Using full dasha sequence — when is the next significant positive turning point and what triggers it?'},
+    {t:'Major life events coming',           s:'Upcoming significant events', q:'Using dasha and yoga activation — what major life events are indicated in the next 10 years?'},
+    {t:'Best years of my life',              s:'Peak life periods',           q:'Using dasha and yoga analysis — which are the most favourable periods overall?'},
+    {t:'What is this current period about?', s:'Current period meaning',      q:'Using current Mahadasha and Antardasha — what does this period mean and how to navigate it?'},
+    {t:'2025 to 2028 predictions',           s:'Near-term forecast',          q:'Detailed prediction for 2025 through 2028 — antardasha mapped to specific life themes.'},
+    {t:'When do things get easier?',         s:'Relief from hardship',        q:'Using current dasha and upcoming antardasha — when does current difficulty ease and what does relief look like?'}
+  ]},
+  dosha:     { icon:'⚡', title:'Doshas & Remedies', sub:'Mangal · Kaal Sarpa · Sade Sati · Pitra · Remedies', questions:[
+    {t:'Do I have Mangal Dosha?',         s:'Mangal Dosha analysis',      q:'Is Mangal Dosha present? Which type? How strong? What does it affect? Cancellation conditions and remedies.'},
+    {t:'Kaal Sarpa Dosha?',               s:'KSD analysis',               q:'Is Kaal Sarpa Dosha present? Full or partial? Which type? Domains affected and remedies.'},
+    {t:'Is Sade Sati running?',           s:'Saturn 7.5-year cycle',      q:'Is Sade Sati running? Which phase? What does it mean now and when does it end?'},
+    {t:'All doshas in my chart',          s:'Complete dosha check',       q:'Check all major doshas — Mangal, KSD, Sade Sati, Pitra, Grahan, Kemdrum — present, strength, effects.'},
+    {t:'What remedies do I need?',        s:'Personalised remedies',      q:'Based on weakest planets, active doshas, and current dasha — most important remedies including gemstones, mantras, and charitable acts.'},
+    {t:'Which gemstone is right for me?', s:'Gemstone recommendation',    q:'Based on lagna lord, strongest benefic, and current dasha lord — which gemstone is most beneficial? Which to avoid?'}
+  ]},
+  children:  { icon:'👶', title:'Children', sub:'5th house · Jupiter · Moon · Dasha timing', questions:[
+    {t:'Will I have children?',                   s:'Children possibility',       q:'Using 5th house, 5th lord, Jupiter, and dasha — what does the chart indicate about having children?'},
+    {t:'When will I have children?',              s:'Children timing',            q:'Using 5th lord and Jupiter dasha — when is the most likely timing for the first child?'},
+    {t:'How many children?',                      s:'Number of children',         q:'Using 5th house and Jupiter — what does the chart indicate about number of children?'},
+    {t:'What will my child be like?',             s:'Child nature and potential',  q:'Using 5th house lord and nakshatra — what kind of child is indicated? Likely strengths and life themes.'},
+    {t:'Are there obstacles to having children?', s:'Delays or difficulties',     q:'Using 5th house afflictions, Jupiter, Saturn, and dasha — are there delays? When do they ease?'}
+  ]},
+  spiritual: { icon:'🕉️', title:'Life Purpose & Dharma', sub:'9th house · Ketu · D9 · Soul direction', questions:[
+    {t:'What is my life purpose?',         s:'Dharma and soul mission',       q:'Using 9th house, Ketu, D9 lagna, and Atmakaraka — what is the dharmic direction and life purpose?'},
+    {t:'What karma am I working through?', s:'Karmic patterns',               q:'Using Ketu, 12th house, and Saturn — what past-life karmic patterns are being worked through?'},
+    {t:'What spiritual path suits me?',    s:'Spiritual practice alignment',  q:'Using 9th house, Ketu, Jupiter, and D9 — what spiritual path is most naturally aligned?'},
+    {t:'Moksha indicators',                s:'Liberation and spiritual depth', q:'Using 12th house, Ketu, and Jupiter — what moksha indicators are present?'},
+    {t:'Who am I becoming?',               s:'D9 soul trajectory',            q:'Using D9 chart image — apply chart reading rules to extract placements, then interpret the soul-level trajectory.'}
+  ]}
+};
+var MODULE_KEYS = ['marriage','career','money','health','future','dosha','children','spiritual'];
+
+var CHART_TYPES = {
+  d9:  { label:'D9 Navamsa',     desc:'Marriage, relationships, spiritual trajectory and post-35 life direction.' },
+  d10: { label:'D10 Dasamsa',    desc:'Career, professional trajectory, public life and peak periods.' },
+  d12: { label:'D12 Dvadasamsa', desc:'Parents, lineage, ancestral karma and family background.' }
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function hideAll() { ['page1','page2','page3','page4','page5'].forEach(hide); }
+
+function addMsg(areaId, role, text) {
+  var area = document.getElementById(areaId);
+  if (!area) return null;
+  var div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.textContent = text;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  return div;
+}
+
+// ─── API call ─────────────────────────────────────────────────────────────────
+async function callClaude(messages, system, chatAreaId, userText) {
+  if (userText) addMsg(chatAreaId, 'user', userText);
+  var loading = addMsg(chatAreaId, 'loading', 'Reading the stars…');
+
+  try {
+    var body = { model: 'claude-sonnet-4-5-20250929', max_tokens: 1500, system: system, messages: messages };
+    var res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error('HTTP ' + res.status + ': ' + (data.error?.message || JSON.stringify(data)));
+    var reply = data.content?.find(function(b) { return b.type === 'text'; })?.text || 'No response received.';
+    loading.className = 'msg agent';
+    loading.textContent = reply;
+    return reply;
+  } catch(e) {
+    loading.className = 'msg error';
+    loading.textContent = 'Error: ' + e.message;
+    return null;
+  }
+}
+
+// ─── Build prompt ─────────────────────────────────────────────────────────────
+function buildSystem() {
+  var uploaded = Object.keys(uploadedCharts).filter(function(k) { return uploadedCharts[k].done; });
+  var imgNote = uploaded.length > 0
+    ? '\n\nDIVISIONAL CHART IMAGES UPLOADED: ' + uploaded.map(function(k) { return CHART_TYPES[k].label; }).join(', ') + '\nWhen answering questions involving these charts, first apply the image reading rules below to extract the placements from the images shared in the conversation, then use those placements in your analysis.\n\n' + IMAGE_RULES
+    : '';
+  return 'You are an expert Vedic astrologer using the 7-layer Jyotish model. Fresh reading — use only the chart data provided.\n\nCHART DATA:\n' + chartCtx + imgNote + '\n\n' + SEVEN_LAYERS + '\n\n' + RESPONSE_FORMAT;
+}
+
+function askQ(question, chatAreaId) {
+  var system = buildSystem();
+  var messages = [{ role: 'user', content: question }];
+  callClaude(messages, system, chatAreaId, question);
+}
+
+// ─── Image reading via API ────────────────────────────────────────────────────
+async function readChartImage(type, b64) {
+  var label = CHART_TYPES[type].label;
+  var system = 'You are an expert at reading Vedic astrology chart images. ' + IMAGE_RULES;
+  var userContent = [
+    { type: 'image', source: { type: 'base64', media_type: 'image/png', data: b64 } },
+    { type: 'text', text: 'Please read this ' + label + ' chart for ' + (personName || 'this person') + '. Apply the chart reading rules precisely and extract all planetary placements.' }
+  ];
+  var body = { model: 'claude-sonnet-4-5-20250929', max_tokens: 800, system: system, messages: [{ role: 'user', content: userContent }] };
+  try {
+    var res = await fetch('/api/claude', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    var data = await res.json();
+    return data.content?.find(function(b) { return b.type === 'text'; })?.text || '';
+  } catch(e) { return ''; }
+}
+
+// ─── Page 1 ───────────────────────────────────────────────────────────────────
+document.getElementById('next-btn').addEventListener('click', function() {
+  var name    = document.getElementById('i-name').value.trim();
+  var birth   = document.getElementById('i-birth').value.trim();
+  var planets = document.getElementById('i-planets').value.trim();
+  var dasha   = document.getElementById('i-dasha').value.trim();
+  if (!planets) { alert('Please paste planetary positions to continue.'); return; }
+  personName = name;
+  var parts = [];
+  if (name)    parts.push('Name: ' + name);
+  if (birth)   parts.push('Birth: ' + birth);
+  parts.push('Planetary positions:\n' + planets);
+  if (dasha)   parts.push('Dasha sequence:\n' + dasha);
+  chartCtx = parts.join('\n\n');
+  buildUploadPage();
+  hideAll(); show('page2');
+});
+
+// ─── Page 2 ───────────────────────────────────────────────────────────────────
+function buildUploadPage() {
+  var grid = document.getElementById('upload-grid');
+  grid.innerHTML = '';
+  Object.keys(CHART_TYPES).forEach(function(key) {
+    var ct = CHART_TYPES[key];
+    var done = uploadedCharts[key].done;
+    var el = document.createElement('div');
+    el.className = 'upload-item' + (done ? ' done' : '');
+    el.innerHTML =
+      '<div class="upload-hdr"><div class="upload-title">' + ct.label + '</div>' +
+      '<div class="badge' + (done ? ' done' : '') + '">' + (done ? 'Uploaded ✓' : 'Optional') + '</div></div>' +
+      '<div class="upload-desc">' + ct.desc + '</div>' +
+      '<button class="upload-btn">' + (done ? 'Re-upload' : 'Upload image') + '</button>';
+    el.querySelector('.upload-btn').addEventListener('click', (function(k) {
+      return function() { showUploadInstructions(k); };
+    })(key));
+    grid.appendChild(el);
+  });
+}
+
+document.getElementById('back-to-1').addEventListener('click', function() { hideAll(); show('page1'); });
+
+document.getElementById('to-agent-btn').addEventListener('click', function() {
+  document.getElementById('a-title').textContent = (personName || 'Chart') + ' — Kundli agent';
+  document.getElementById('a-sub').textContent = document.getElementById('i-birth').value.trim();
+  updateBadges();
+  buildDashboard();
+  hideAll(); show('page3');
+});
+
+function updateBadges() {
+  var el = document.getElementById('chart-badges');
+  el.innerHTML = '';
+  Object.keys(uploadedCharts).forEach(function(k) {
+    if (uploadedCharts[k].done) {
+      var b = document.createElement('div');
+      b.className = 'chart-badge';
+      b.textContent = CHART_TYPES[k].label + ' ✓';
+      el.appendChild(b);
+    }
+  });
+}
+
+// ─── Page 5: Upload instructions ─────────────────────────────────────────────
+function showUploadInstructions(type) {
+  currentInstType = type;
+  document.getElementById('inst-title').textContent = 'Upload ' + CHART_TYPES[type].label;
+  document.getElementById('inst-preview-box').style.display = 'none';
+  hide('inst-done-btn');
+  hideAll(); show('page5');
+}
+
+document.getElementById('inst-back-btn').addEventListener('click', function() { hideAll(); show('page2'); });
+
+document.getElementById('inst-choose-btn').addEventListener('click', function() {
+  document.getElementById('chart-file-input').click();
+});
+
+document.getElementById('chart-file-input').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var b64 = ev.target.result.split(',')[1];
+    var img = document.getElementById('inst-preview-img');
+    img.src = ev.target.result;
+    document.getElementById('inst-preview-box').style.display = 'block';
+    show('inst-done-btn');
+    document.getElementById('inst-done-btn').onclick = async function() {
+      document.getElementById('inst-done-btn').textContent = 'Reading chart…';
+      document.getElementById('inst-done-btn').disabled = true;
+      var reading = await readChartImage(currentInstType, b64);
+      uploadedCharts[currentInstType].done = true;
+      uploadedCharts[currentInstType].b64 = b64;
+      if (reading) {
+        chartCtx += '\n\n' + CHART_TYPES[currentInstType].label + ' placements (read from uploaded image):\n' + reading;
+      }
+      buildUploadPage();
+      hideAll(); show('page2');
+    };
+  };
+  reader.readAsDataURL(file);
+});
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+document.getElementById('free-btn').addEventListener('click', function() {
+  var inp = document.getElementById('free-q');
+  var q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  askQ(q, 'dash-chat');
+});
+document.getElementById('free-q').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('free-btn').click();
+});
+
+document.getElementById('reset-btn').addEventListener('click', function() {
+  chartCtx = ''; personName = '';
+  uploadedCharts = { d9:{done:false,b64:''}, d10:{done:false,b64:''}, d12:{done:false,b64:''} };
+  ['i-name','i-birth','i-planets','i-dasha'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('dash-chat').innerHTML = '';
+  document.getElementById('mod-chat').innerHTML = '';
+  hideAll(); show('page1');
+});
+
+function buildDashboard() {
+  var mg = document.getElementById('module-grid');
+  mg.innerHTML = '';
+  MODULE_KEYS.forEach(function(key) {
+    var m = MODULES[key];
+    var el = document.createElement('div');
+    el.className = 'module-card';
+    el.innerHTML = '<div class="module-icon">' + m.icon + '</div><div class="module-title">' + m.title + '</div><div class="module-sub">' + m.sub + '</div>';
+    el.addEventListener('click', function() { showModule(key); });
+    mg.appendChild(el);
+  });
+  var lg = document.getElementById('layer-grid');
+  lg.innerHTML = '';
+  for (var i = 0; i < 7; i++) {
+    (function(idx) {
+      var el = document.createElement('div');
+      el.className = 'lp';
+      el.innerHTML = '<div class="lp-num">Layer ' + (idx+1) + '</div><div class="lp-name">' + LAYER_NAMES[idx] + '</div>';
+      el.addEventListener('click', function() { askQ(LAYER_Q[idx], 'dash-chat'); });
+      lg.appendChild(el);
+    })(i);
+  }
+}
+
+// ─── Module ───────────────────────────────────────────────────────────────────
+document.getElementById('back-tag').addEventListener('click',  function() { hideAll(); show('page3'); });
+document.getElementById('back-btn2').addEventListener('click', function() { hideAll(); show('page3'); });
+
+document.getElementById('m-free-btn').addEventListener('click', function() {
+  var inp = document.getElementById('m-free-q');
+  var q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  var m = MODULES[currentModuleKey];
+  askQ((m ? '[' + m.title + '] ' : '') + q, 'mod-chat');
+});
+document.getElementById('m-free-q').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('m-free-btn').click();
+});
+
+function showModule(key) {
+  var m = MODULES[key];
+  currentModuleKey = key;
+  document.getElementById('m-title').textContent = m.icon + '  ' + m.title;
+  document.getElementById('m-sub').textContent = m.sub;
+  var list = document.getElementById('m-questions');
+  list.innerHTML = '';
+  m.questions.forEach(function(q) {
+    var el = document.createElement('div');
+    el.className = 'q-item';
+    el.innerHTML = '<div class="q-left"><div class="q-title">' + q.t + '</div><div class="q-sub">' + q.s + '</div></div><div class="q-arrow">→</div>';
+    el.addEventListener('click', (function(question) {
+      return function() { askQ(question, 'mod-chat'); };
+    })(q.q));
+    list.appendChild(el);
+  });
+  document.getElementById('mod-chat').innerHTML = '';
+  hideAll(); show('page4');
+}
+</script>
+</body>
+</html>
